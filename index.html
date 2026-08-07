@@ -149,7 +149,7 @@
       flex: 1;
       overflow-y: auto;
       padding: 16px;
-      padding-bottom: 90px; /* Jarak agar konten paling bawah tidak tertutup menu */
+      padding-bottom: 90px;
       background-color: #ffffff;
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
@@ -354,7 +354,7 @@
     .btn-detail { background-color: #eff6ff; color: #2563eb; }
     .btn-delete { background-color: #fef2f2; color: #ef4444; }
 
-    /* Bottom Navigation (Dibuat Tetap di Bawah) */
+    /* Bottom Navigation (Fixed) */
     .bottom-nav {
       position: absolute;
       bottom: 0;
@@ -370,7 +370,6 @@
       z-index: 50;
     }
 
-    /* Penyesuaian khusus tampilan mobile nyata agar konsisten di bawah layar HP */
     @media (max-width: 450px) {
       .bottom-nav {
         position: fixed;
@@ -525,26 +524,26 @@
       </div>
     </div>
 
-    <!-- Main Content (Tempat Scroll) -->
+    <!-- Main Content -->
     <div class="content">
       <!-- Summary Cards -->
       <div class="summary-grid">
         <div class="card card-blue" onclick="setFilterMode('all')">
           <div class="card-icon"><i data-lucide="users" size="14"></i></div>
           <span class="card-title">Total Peminjam</span>
-          <span class="card-value" id="totalCount">5</span>
+          <span class="card-value" id="totalCount">0</span>
           <span class="card-subtitle">Semua peminjam</span>
         </div>
         <div class="card card-orange" onclick="setFilterMode('pinjam')">
           <div class="card-icon"><i data-lucide="clock" size="14"></i></div>
           <span class="card-title">Status Pinjam</span>
-          <span class="card-value" id="activeCount">3</span>
+          <span class="card-value" id="activeCount">0</span>
           <span class="card-subtitle">Sedang pinjam</span>
         </div>
         <div class="card card-green" onclick="setFilterMode('dibayar')">
           <div class="card-icon"><i data-lucide="check-circle-2" size="14"></i></div>
           <span class="card-title">Sudah Dibayar</span>
-          <span class="card-value" id="paidCount">2</span>
+          <span class="card-value" id="paidCount">0</span>
           <span class="card-subtitle">Peminjaman selesai</span>
         </div>
       </div>
@@ -561,7 +560,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation Bar (Fixed / Tetap) -->
+    <!-- Bottom Navigation Bar -->
     <div class="bottom-nav">
       <button class="nav-item">
         <i data-lucide="home" size="18"></i>
@@ -605,7 +604,8 @@
   </div>
 
   <script>
-    let borrowers = [
+    // Data bawaan awal (default jika LocalStorage belum terisi)
+    const initialData = [
       { id: 1, name: "Andi Pratama", date: "20 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 1.500.000", avatarColor: "avatar-blue" },
       { id: 2, name: "Siti Nurhaliza", date: "15 Mei 2024", paidDate: "18 Mei 2024", status: "dibayar", amount: "Rp 750.000", avatarColor: "avatar-green" },
       { id: 3, name: "Budi Santoso", date: "18 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 2.000.000", avatarColor: "avatar-purple" },
@@ -613,7 +613,14 @@
       { id: 5, name: "Rizky Maulana", date: "21 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 900.000", avatarColor: "avatar-blue" }
     ];
 
+    // Ambil data dari LocalStorage, jika belum ada gunakan initialData
+    let borrowers = JSON.parse(localStorage.getItem('app_borrowers_data')) || initialData;
     let currentFilterStatus = 'all';
+
+    // Simpan data terbaru ke LocalStorage
+    function saveDataToStorage() {
+      localStorage.setItem('app_borrowers_data', JSON.stringify(borrowers));
+    }
 
     function getFormattedDate() {
       const today = new Date();
@@ -782,6 +789,7 @@
       };
 
       borrowers.unshift(newBorrower);
+      saveDataToStorage(); // Simpan ke penyimpanan lokal
       applyFilters();
       updateCounts();
     }
@@ -793,6 +801,7 @@
           borrower.status = "dibayar";
           borrower.paidDate = getFormattedDate();
           borrower.avatarColor = "avatar-green";
+          saveDataToStorage(); // Simpan ke penyimpanan lokal
           applyFilters();
           updateCounts();
         }
@@ -802,6 +811,7 @@
     function deleteBorrower(id) {
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         borrowers = borrowers.filter(b => b.id !== id);
+        saveDataToStorage(); // Simpan ke penyimpanan lokal
         applyFilters();
         updateCounts();
       }
@@ -813,6 +823,7 @@
       document.getElementById('paidCount').innerText = borrowers.filter(b => b.status === 'dibayar').length;
     }
 
+    // Panggilan awal saat halaman dimuat
     applyFilters();
     updateCounts();
   </script>

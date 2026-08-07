@@ -6,6 +6,7 @@
   <title>Kelola Peminjam</title>
   <!-- Font & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons Script -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
@@ -111,7 +112,7 @@
       padding: 0 14px;
     }
 
-    .search-box i {
+    .search-box i, .search-box svg {
       color: #94a3b8;
       margin-right: 8px;
     }
@@ -604,7 +605,6 @@
   </div>
 
   <script>
-    // Data bawaan awal (default jika LocalStorage belum terisi)
     const initialData = [
       { id: 1, name: "Andi Pratama", date: "20 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 1.500.000", avatarColor: "avatar-blue" },
       { id: 2, name: "Siti Nurhaliza", date: "15 Mei 2024", paidDate: "18 Mei 2024", status: "dibayar", amount: "Rp 750.000", avatarColor: "avatar-green" },
@@ -613,11 +613,9 @@
       { id: 5, name: "Rizky Maulana", date: "21 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 900.000", avatarColor: "avatar-blue" }
     ];
 
-    // Ambil data dari LocalStorage, jika belum ada gunakan initialData
     let borrowers = JSON.parse(localStorage.getItem('app_borrowers_data')) || initialData;
     let currentFilterStatus = 'all';
 
-    // Simpan data terbaru ke LocalStorage
     function saveDataToStorage() {
       localStorage.setItem('app_borrowers_data', JSON.stringify(borrowers));
     }
@@ -685,7 +683,10 @@
         listContainer.insertAdjacentHTML('beforeend', cardHTML);
       });
 
-      lucide.createIcons();
+      // Panggil penghasil ikon setelah render HTML selesai
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     function applyFilters() {
@@ -789,7 +790,7 @@
       };
 
       borrowers.unshift(newBorrower);
-      saveDataToStorage(); // Simpan ke penyimpanan lokal
+      saveDataToStorage();
       applyFilters();
       updateCounts();
     }
@@ -801,7 +802,7 @@
           borrower.status = "dibayar";
           borrower.paidDate = getFormattedDate();
           borrower.avatarColor = "avatar-green";
-          saveDataToStorage(); // Simpan ke penyimpanan lokal
+          saveDataToStorage();
           applyFilters();
           updateCounts();
         }
@@ -811,7 +812,7 @@
     function deleteBorrower(id) {
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         borrowers = borrowers.filter(b => b.id !== id);
-        saveDataToStorage(); // Simpan ke penyimpanan lokal
+        saveDataToStorage();
         applyFilters();
         updateCounts();
       }
@@ -823,9 +824,14 @@
       document.getElementById('paidCount').innerText = borrowers.filter(b => b.status === 'dibayar').length;
     }
 
-    // Panggilan awal saat halaman dimuat
-    applyFilters();
-    updateCounts();
+    // Inisialisasi saat DOM selesai dimuat
+    document.addEventListener("DOMContentLoaded", function () {
+      applyFilters();
+      updateCounts();
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    });
   </script>
 </body>
 </html>

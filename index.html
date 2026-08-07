@@ -47,26 +47,11 @@
       }
     }
 
-    /* Top Bar / Header */
+    /* Header (Tanpa status bar jam/baterai) */
     .header {
       background-color: #0052cc;
       color: #ffffff;
-      padding: 16px 20px 24px 20px;
-    }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .status-icons {
-      display: flex;
-      gap: 6px;
-      align-items: center;
+      padding: 24px 20px 24px 20px;
     }
 
     .nav-bar {
@@ -150,6 +135,12 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .filter-btn.active-filter {
+      background-color: #1e40af;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
     }
 
     /* Content Area */
@@ -216,6 +207,9 @@
 
     /* List Section Header */
     .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 12px;
     }
 
@@ -223,6 +217,12 @@
       font-size: 15px;
       font-weight: 700;
       color: #0f172a;
+    }
+
+    .filter-indicator {
+      font-size: 11px;
+      color: #2563eb;
+      font-weight: 600;
     }
 
     /* Borrower Cards List */
@@ -405,22 +405,92 @@
     .fab:active {
       transform: scale(0.95);
     }
+
+    /* Modal Detail Styles */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: white;
+      width: 85%;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      transform: translateY(20px);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 10px;
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      color: #0f172a;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+
+    .detail-row span:first-child {
+      color: #64748b;
+    }
+
+    .detail-row span:last-child {
+      font-weight: 600;
+      color: #0f172a;
+    }
   </style>
 </head>
 <body>
 
   <div class="app-frame">
-    <!-- Header -->
+    <!-- Header (Sudah Tanpa Status Bar Jam/Ikon) -->
     <div class="header">
-      <div class="status-bar">
-        <span>09.41</span>
-        <div class="status-icons">
-          <i data-lucide="signal" size="14"></i>
-          <i data-lucide="wifi" size="14"></i>
-          <i data-lucide="battery-charging" size="14"></i>
-        </div>
-      </div>
-
       <div class="nav-bar">
         <i data-lucide="menu" size="20"></i>
         <div class="title-area">
@@ -436,9 +506,10 @@
       <div class="search-container">
         <div class="search-box">
           <i data-lucide="search" size="16"></i>
-          <input type="text" id="searchInput" placeholder="Cari nama peminjam..." onkeyup="filterData()">
+          <input type="text" id="searchInput" placeholder="Cari nama peminjam..." onkeyup="applyFilters()">
         </div>
-        <button class="filter-btn">
+        <!-- Tombol Filter Status -->
+        <button class="filter-btn" id="filterBtn" onclick="toggleFilterModal()" title="Filter Status">
           <i data-lucide="sliders-horizontal" size="18"></i>
         </button>
       </div>
@@ -448,19 +519,19 @@
     <div class="content">
       <!-- Summary Cards -->
       <div class="summary-grid">
-        <div class="card card-blue">
+        <div class="card card-blue" onclick="setFilterMode('all')">
           <div class="card-icon"><i data-lucide="users" size="14"></i></div>
           <span class="card-title">Total Peminjam</span>
           <span class="card-value" id="totalCount">5</span>
           <span class="card-subtitle">Semua peminjam</span>
         </div>
-        <div class="card card-orange">
+        <div class="card card-orange" onclick="setFilterMode('pinjam')">
           <div class="card-icon"><i data-lucide="clock" size="14"></i></div>
           <span class="card-title">Status Pinjam</span>
           <span class="card-value" id="activeCount">3</span>
           <span class="card-subtitle">Sedang pinjam</span>
         </div>
-        <div class="card card-green">
+        <div class="card card-green" onclick="setFilterMode('dibayar')">
           <div class="card-icon"><i data-lucide="check-circle-2" size="14"></i></div>
           <span class="card-title">Sudah Dibayar</span>
           <span class="card-value" id="paidCount">2</span>
@@ -471,6 +542,7 @@
       <!-- Section Title -->
       <div class="section-header">
         <h2>Daftar Peminjam</h2>
+        <span class="filter-indicator" id="filterLabel">Filter: Semua</span>
       </div>
 
       <!-- Borrower List Container -->
@@ -505,10 +577,26 @@
         <span>Laporan</span>
       </button>
     </div>
+
+    <!-- Modal Popup Detail Peminjam -->
+    <div class="modal-overlay" id="detailModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Detail Peminjam</h3>
+          <button class="close-btn" onclick="closeDetailModal()">
+            <i data-lucide="x" size="20"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="modalContent">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    // Initial Data Dummy (dengan field paidDate jika sudah lunas)
+    // Data Dummy Peminjam
     let borrowers = [
       { id: 1, name: "Andi Pratama", date: "20 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 1.500.000", avatarColor: "avatar-blue" },
       { id: 2, name: "Siti Nurhaliza", date: "15 Mei 2024", paidDate: "18 Mei 2024", status: "dibayar", amount: "Rp 750.000", avatarColor: "avatar-green" },
@@ -517,17 +605,23 @@
       { id: 5, name: "Rizky Maulana", date: "21 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 900.000", avatarColor: "avatar-blue" }
     ];
 
-    // Helper untuk format tanggal Indonesia
+    let currentFilterStatus = 'all'; // Mode Filter: 'all', 'pinjam', atau 'dibayar'
+
     function getFormattedDate() {
       const today = new Date();
       const options = { day: 'numeric', month: 'short', year: 'numeric' };
       return today.toLocaleDateString('id-ID', options);
     }
 
-    // Render list ke layar
+    // Render daftar peminjam
     function renderList(data) {
       const listContainer = document.getElementById('borrowerList');
       listContainer.innerHTML = '';
+
+      if (data.length === 0) {
+        listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 20px 0; font-size: 13px;">Tidak ada data ditemukan.</div>`;
+        return;
+      }
 
       data.forEach(item => {
         const isPinjam = item.status === 'pinjam';
@@ -535,12 +629,10 @@
           ? `<span class="status-badge status-pinjam">• Status Pinjam</span>`
           : `<span class="status-badge status-dibayar"><i data-lucide="check" size="10"></i> Sudah Dibayar</span>`;
 
-        // Menampilkan Tanggal Bayar jika sudah lunas
         const paidDateHTML = item.paidDate 
           ? `<div class="date date-paid"><i data-lucide="check-circle-2" size="10"></i> Lunas: ${item.paidDate}</div>` 
           : '';
 
-        // Tombol 'Bayar' hanya tampil jika masih 'pinjam'
         const payButton = isPinjam 
           ? `<button class="btn-action btn-pay" onclick="payBorrower(${item.id})"><i data-lucide="check-circle" size="12"></i> Bayar</button>` 
           : '';
@@ -570,7 +662,7 @@
               </div>
               <div class="action-btns">
                 ${payButton}
-                <button class="btn-action btn-detail"><i data-lucide="eye" size="12"></i> Detail</button>
+                <button class="btn-action btn-detail" onclick="showDetail(${item.id})"><i data-lucide="eye" size="12"></i> Detail</button>
                 <button class="btn-action btn-delete" onclick="deleteBorrower(${item.id})"><i data-lucide="trash-2" size="12"></i> Hapus</button>
               </div>
             </div>
@@ -579,18 +671,91 @@
         listContainer.insertAdjacentHTML('beforeend', cardHTML);
       });
 
-      // Re-initialize Lucide Icons
       lucide.createIcons();
     }
 
-    // Filter Nama
-    function filterData() {
+    // Fungsi Gabungan untuk Menyaring Data (Search + Filter Button)
+    function applyFilters() {
       const query = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = borrowers.filter(b => b.name.toLowerCase().includes(query));
+      
+      const filtered = borrowers.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(query);
+        const matchesStatus = currentFilterStatus === 'all' ? true : item.status === currentFilterStatus;
+        return matchesSearch && matchesStatus;
+      });
+
       renderList(filtered);
     }
 
-    // Tambah Peminjam (Dipanggil via Tombol Pinjam Bawah)
+    // Fungsi Tombol Filter Status (Bisa Di-klik Bergantian)
+    function toggleFilterModal() {
+      if (currentFilterStatus === 'all') {
+        setFilterMode('pinjam');
+      } else if (currentFilterStatus === 'pinjam') {
+        setFilterMode('dibayar');
+      } else {
+        setFilterMode('all');
+      }
+    }
+
+    function setFilterMode(status) {
+      currentFilterStatus = status;
+      const filterBtn = document.getElementById('filterBtn');
+      const filterLabel = document.getElementById('filterLabel');
+
+      if (status === 'pinjam') {
+        filterBtn.classList.add('active-filter');
+        filterLabel.innerText = 'Filter: Sedang Pinjam';
+      } else if (status === 'dibayar') {
+        filterBtn.classList.add('active-filter');
+        filterLabel.innerText = 'Filter: Sudah Dibayar';
+      } else {
+        filterBtn.classList.remove('active-filter');
+        filterLabel.innerText = 'Filter: Semua';
+      }
+
+      applyFilters();
+    }
+
+    // Fungsi Menampilkan Modal Detail Peminjam
+    function showDetail(id) {
+      const item = borrowers.find(b => b.id === id);
+      if (!item) return;
+
+      const modalContent = document.getElementById('modalContent');
+      const isPinjam = item.status === 'pinjam';
+
+      modalContent.innerHTML = `
+        <div class="detail-row">
+          <span>Nama Peminjam</span>
+          <span>${item.name}</span>
+        </div>
+        <div class="detail-row">
+          <span>Jumlah Pinjaman</span>
+          <span>${item.amount}</span>
+        </div>
+        <div class="detail-row">
+          <span>Status Pinjaman</span>
+          <span style="color: ${isPinjam ? '#d97706' : '#16a34a'}">${isPinjam ? 'Sedang Pinjam' : 'Sudah Dibayar'}</span>
+        </div>
+        <div class="detail-row">
+          <span>Tanggal Pinjam</span>
+          <span>${item.date}</span>
+        </div>
+        <div class="detail-row">
+          <span>Tanggal Pelunasan</span>
+          <span>${item.paidDate ? item.paidDate : '-'}</span>
+        </div>
+      `;
+
+      document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // Tambah Peminjam via FAB Bawah
     function addBorrower() {
       const name = prompt("Masukkan nama peminjam:");
       if (!name) return;
@@ -614,42 +779,42 @@
       };
 
       borrowers.unshift(newBorrower);
-      renderList(borrowers);
+      applyFilters();
       updateCounts();
     }
 
-    // Fungsi Pembayaran Pinjaman (Set Tanggal Bayar Otomatis)
+    // Bayar Pinjaman
     function payBorrower(id) {
       const borrower = borrowers.find(b => b.id === id);
       if (borrower) {
         if (confirm(`Konfirmasi pelunasan pinjaman sebesar ${borrower.amount} untuk ${borrower.name}?`)) {
           borrower.status = "dibayar";
-          borrower.paidDate = getFormattedDate(); // Mengisi tanggal bayar hari ini secara otomatis
+          borrower.paidDate = getFormattedDate();
           borrower.avatarColor = "avatar-green";
-          renderList(borrowers);
+          applyFilters();
           updateCounts();
         }
       }
     }
 
-    // Hapus peminjam
+    // Hapus Peminjam
     function deleteBorrower(id) {
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         borrowers = borrowers.filter(b => b.id !== id);
-        renderList(borrowers);
+        applyFilters();
         updateCounts();
       }
     }
 
-    // Hitung Ulang Statistik Ringkasan
+    // Update Angka Ringkasan Atas
     function updateCounts() {
       document.getElementById('totalCount').innerText = borrowers.length;
       document.getElementById('activeCount').innerText = borrowers.filter(b => b.status === 'pinjam').length;
       document.getElementById('paidCount').innerText = borrowers.filter(b => b.status === 'dibayar').length;
     }
 
-    // Initial Load
-    renderList(borrowers);
+    // Load Pertama
+    applyFilters();
     updateCounts();
   </script>
 </body>

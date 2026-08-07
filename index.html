@@ -1,394 +1,656 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Piutang Konter</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Peminjam</title>
+  <!-- Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    body {
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-<style>
+    /* Phone Frame Container */
+    .app-frame {
+      width: 100%;
+      max-width: 412px;
+      height: 100vh;
+      max-height: 892px;
+      background-color: #f8fafc;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
 
-body{
-    background:#f4f7fb;
-    padding-bottom:100px;
-}
+    @media (min-width: 450px) {
+      .app-frame {
+        border-radius: 40px;
+        height: 850px;
+        border: 8px solid #1e293b;
+      }
+    }
 
-.header{
-    background:linear-gradient(135deg,#0d6efd,#0a58ca);
-    color:white;
-    padding:25px;
-    border-radius:0 0 25px 25px;
-}
+    /* Top Bar / Header */
+    .header {
+      background-color: #0052cc;
+      color: #ffffff;
+      padding: 16px 20px 24px 20px;
+    }
 
-.stat-card{
-    border:none;
-    border-radius:20px;
-    box-shadow:0 5px 15px rgba(0,0,0,.08);
-}
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
 
-.form-card{
-    border:none;
-    border-radius:20px;
-    box-shadow:0 5px 15px rgba(0,0,0,.08);
-}
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
 
-.list-card{
-    border:none;
-    border-radius:20px;
-    box-shadow:0 5px 15px rgba(0,0,0,.08);
-    margin-bottom:15px;
-}
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-.rp{
-    font-size:22px;
-    font-weight:bold;
-}
+    .title-area h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
 
-.section-title{
-    font-weight:700;
-    margin-bottom:15px;
-}
+    .title-area p {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
 
-.empty{
-    text-align:center;
-    color:gray;
-    padding:20px;
-}
+    .notification-btn {
+      position: relative;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
 
-.btn{
-    border-radius:12px;
-}
+    .badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background-color: #ff3b30;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-input{
-    border-radius:12px !important;
-}
+    .search-container {
+      display: flex;
+      gap: 10px;
+    }
 
-</style>
+    .search-box {
+      flex: 1;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+    }
+
+    .search-box i {
+      color: #94a3b8;
+      margin-right: 8px;
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 12px 0;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .filter-btn {
+      background-color: #2563eb;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Content Area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: 90px;
+      background-color: #ffffff;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      margin-top: -12px;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      padding: 12px 10px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-blue { background-color: #f0f7ff; border: 1px solid #e0f2fe; }
+    .card-orange { background-color: #fffbeb; border: 1px solid #fef3c7; }
+    .card-green { background-color: #f0fdf4; border: 1px solid #dcfce7; }
+
+    .card-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-blue .card-icon { background: #dbeafe; color: #2563eb; }
+    .card-orange .card-icon { background: #fef3c7; color: #d97706; }
+    .card-green .card-icon { background: #dcfce7; color: #16a34a; }
+
+    .card-title {
+      font-size: 11px;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .card-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .card-subtitle {
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    /* List Section Header */
+    .section-header {
+      margin-bottom: 12px;
+    }
+
+    .section-header h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Borrower Cards List */
+    .borrower-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .borrower-card {
+      border: 1px solid #f1f5f9;
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .borrower-info {
+      display: flex;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-blue { background-color: #dbeafe; color: #2563eb; }
+    .avatar-green { background-color: #dcfce7; color: #16a34a; }
+    .avatar-purple { background-color: #f3e8ff; color: #9333ea; }
+
+    .details h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .date-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .date {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    .date-paid {
+      color: #16a34a;
+      font-weight: 600;
+    }
+
+    .borrower-status-area {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-pinjam {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    .status-dibayar {
+      background-color: #dcfce7;
+      color: #16a34a;
+    }
+
+    .amount-info {
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .amount-info label {
+      font-size: 9px;
+      color: #64748b;
+      display: block;
+    }
+
+    .amount-info span {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .btn-action {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .btn-pay { background-color: #dcfce7; color: #15803d; }
+    .btn-detail { background-color: #eff6ff; color: #2563eb; }
+    .btn-delete { background-color: #fef2f2; color: #ef4444; }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 65px;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 500;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .fab {
+      position: absolute;
+      top: -20px;
+      background-color: #2563eb;
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+      border: 3px solid white;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
+  </style>
 </head>
 <body>
 
-<div class="header text-center">
-    <h3>📱 Piutang Konter</h3>
-    <small>Catatan Pelanggan Belum Bayar</small>
-</div>
-
-<div class="container mt-4">
-
-    <div class="row g-3 mb-4">
-
-        <div class="col-6">
-            <div class="card stat-card bg-danger text-white">
-                <div class="card-body text-center">
-                    <small>Total Piutang</small>
-                    <h5 id="totalPiutang">Rp 0</h5>
-                </div>
-            </div>
+  <div class="app-frame">
+    <!-- Header -->
+    <div class="header">
+      <div class="status-bar">
+        <span>09.41</span>
+        <div class="status-icons">
+          <i data-lucide="signal" size="14"></i>
+          <i data-lucide="wifi" size="14"></i>
+          <i data-lucide="battery-charging" size="14"></i>
         </div>
+      </div>
 
-        <div class="col-6">
-            <div class="card stat-card bg-success text-white">
-                <div class="card-body text-center">
-                    <small>Total Pemasukan</small>
-                    <h5 id="totalPemasukan">Rp 0</h5>
-                </div>
-            </div>
+      <div class="nav-bar">
+        <i data-lucide="menu" size="20"></i>
+        <div class="title-area">
+          <h1>Peminjam</h1>
+          <p>Kelola data peminjam</p>
         </div>
+        <button class="notification-btn">
+          <i data-lucide="bell" size="20"></i>
+          <span class="badge">3</span>
+        </button>
+      </div>
 
+      <div class="search-container">
+        <div class="search-box">
+          <i data-lucide="search" size="16"></i>
+          <input type="text" id="searchInput" placeholder="Cari nama peminjam..." onkeyup="filterData()">
+        </div>
+        <button class="filter-btn">
+          <i data-lucide="sliders-horizontal" size="18"></i>
+        </button>
+      </div>
     </div>
 
-    <div class="card form-card mb-4">
-        <div class="card-body">
-
-            <h5 class="mb-3">Tambah Piutang</h5>
-
-            <input
-                type="text"
-                id="nama"
-                class="form-control mb-3"
-                placeholder="Nama Pelanggan">
-
-            <input
-                type="number"
-                id="nominal"
-                class="form-control mb-3"
-                placeholder="Nominal">
-
-            <input
-                type="text"
-                id="keterangan"
-                class="form-control mb-3"
-                placeholder="Keterangan Transaksi">
-
-            <button
-                class="btn btn-primary w-100"
-                onclick="tambahData()">
-                + Tambah Piutang
-            </button>
-
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <div class="card card-blue">
+          <div class="card-icon"><i data-lucide="users" size="14"></i></div>
+          <span class="card-title">Total Peminjam</span>
+          <span class="card-value" id="totalCount">5</span>
+          <span class="card-subtitle">Semua peminjam</span>
         </div>
+        <div class="card card-orange">
+          <div class="card-icon"><i data-lucide="clock" size="14"></i></div>
+          <span class="card-title">Status Pinjam</span>
+          <span class="card-value" id="activeCount">3</span>
+          <span class="card-subtitle">Sedang pinjam</span>
+        </div>
+        <div class="card card-green">
+          <div class="card-icon"><i data-lucide="check-circle-2" size="14"></i></div>
+          <span class="card-title">Sudah Dibayar</span>
+          <span class="card-value" id="paidCount">2</span>
+          <span class="card-subtitle">Peminjaman selesai</span>
+        </div>
+      </div>
+
+      <!-- Section Title -->
+      <div class="section-header">
+        <h2>Daftar Peminjam</h2>
+      </div>
+
+      <!-- Borrower List Container -->
+      <div class="borrower-list" id="borrowerList">
+        <!-- Rendered by JS -->
+      </div>
     </div>
 
-    <h5 class="section-title">
-        🔴 Belum Bayar
-    </h5>
-
-    <div id="belumBayar"></div>
-
-    <h5 class="section-title mt-4">
-        🟢 Riwayat Pembayaran
-    </h5>
-
-    <div id="riwayat"></div>
-
-</div>
-
-<script>
-
-let piutang =
-JSON.parse(localStorage.getItem('piutang')) || [];
-
-let pemasukan =
-JSON.parse(localStorage.getItem('pemasukan')) || [];
-
-function simpanData(){
-
-    localStorage.setItem(
-        'piutang',
-        JSON.stringify(piutang)
-    );
-
-    localStorage.setItem(
-        'pemasukan',
-        JSON.stringify(pemasukan)
-    );
-}
-
-function formatRupiah(angka){
-
-    return "Rp " +
-    angka.toLocaleString("id-ID");
-}
-
-function tambahData(){
-
-    let nama =
-    document.getElementById('nama').value.trim();
-
-    let nominal =
-    document.getElementById('nominal').value;
-
-    let keterangan =
-    document.getElementById('keterangan').value.trim();
-
-    if(nama === "" || nominal === ""){
-
-        alert("Lengkapi data terlebih dahulu");
-        return;
-    }
-
-    let tanggal =
-    new Date().toLocaleDateString('id-ID');
-
-    piutang.push({
-
-        nama:nama,
-        nominal:Number(nominal),
-        keterangan:keterangan,
-        tanggal:tanggal,
-        status:"Belum Bayar"
-
-    });
-
-    simpanData();
-
-    document.getElementById('nama').value="";
-    document.getElementById('nominal').value="";
-    document.getElementById('keterangan').value="";
-
-    tampilData();
-}
-
-function lunas(index){
-
-    let data = piutang[index];
-
-    data.status = "Lunas";
-
-    pemasukan.push(data);
-
-    piutang.splice(index,1);
-
-    simpanData();
-
-    tampilData();
-}
-
-function hapusPiutang(index){
-
-    if(confirm("Hapus data ini ?")){
-
-        piutang.splice(index,1);
-
-        simpanData();
-
-        tampilData();
-    }
-}
-
-function tampilData(){
-
-    let totalPiutang = 0;
-    let totalPemasukan = 0;
-
-    let htmlPiutang = "";
-
-    if(piutang.length === 0){
-
-        htmlPiutang = `
-        <div class="empty">
-            Tidak ada piutang
-        </div>`;
-    }
-
-    piutang.forEach((item,index)=>{
-
-        totalPiutang += item.nominal;
-
-        htmlPiutang += `
-
-        <div class="card list-card">
-
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between">
-
-                    <div>
-
-                        <h6 class="mb-1">
-                            ${item.nama}
-                        </h6>
-
-                        <small class="text-muted d-block">
-                            ${item.tanggal}
-                        </small>
-
-                        <small class="text-primary fw-semibold">
-                            ${item.keterangan}
-                        </small>
-
-                    </div>
-
-                    <span class="badge bg-danger">
-                        Belum Bayar
-                    </span>
-
-                </div>
-
-                <div class="rp text-danger mt-3">
-                    ${formatRupiah(item.nominal)}
-                </div>
-
-                <div class="row mt-3">
-
-                    <div class="col-6">
-
-                        <button
-                        class="btn btn-success w-100"
-                        onclick="lunas(${index})">
-                        Lunas
-                        </button>
-
-                    </div>
-
-                    <div class="col-6">
-
-                        <button
-                        class="btn btn-outline-danger w-100"
-                        onclick="hapusPiutang(${index})">
-                        Hapus
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+      <button class="nav-item">
+        <i data-lucide="home" size="18"></i>
+        <span>Beranda</span>
+      </button>
+      <button class="nav-item active">
+        <i data-lucide="users" size="18"></i>
+        <span>Peminjam</span>
+      </button>
+      <!-- Tombol Tambah Pinjaman Utama (FAB) -->
+      <button class="nav-item" onclick="addBorrower()">
+        <div class="fab">
+          <i data-lucide="plus" size="24"></i>
         </div>
+        <span style="margin-top: 22px;">Pinjam</span>
+      </button>
+      <button class="nav-item">
+        <i data-lucide="file-text" size="18"></i>
+        <span>Pembayaran</span>
+      </button>
+      <button class="nav-item">
+        <i data-lucide="bar-chart-3" size="18"></i>
+        <span>Laporan</span>
+      </button>
+    </div>
+  </div>
 
-        `;
-    });
+  <script>
+    // Initial Data Dummy (dengan field paidDate jika sudah lunas)
+    let borrowers = [
+      { id: 1, name: "Andi Pratama", date: "20 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 1.500.000", avatarColor: "avatar-blue" },
+      { id: 2, name: "Siti Nurhaliza", date: "15 Mei 2024", paidDate: "18 Mei 2024", status: "dibayar", amount: "Rp 750.000", avatarColor: "avatar-green" },
+      { id: 3, name: "Budi Santoso", date: "18 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 2.000.000", avatarColor: "avatar-purple" },
+      { id: 4, name: "Dewi Lestari", date: "10 Mei 2024", paidDate: "12 Mei 2024", status: "dibayar", amount: "Rp 1.250.000", avatarColor: "avatar-green" },
+      { id: 5, name: "Rizky Maulana", date: "21 Mei 2024", paidDate: null, status: "pinjam", amount: "Rp 900.000", avatarColor: "avatar-blue" }
+    ];
 
-    document.getElementById('belumBayar').innerHTML = htmlPiutang;
-
-    let htmlPemasukan = "";
-
-    if(pemasukan.length === 0){
-
-        htmlPemasukan = `
-        <div class="empty">
-            Belum ada pembayaran
-        </div>`;
+    // Helper untuk format tanggal Indonesia
+    function getFormattedDate() {
+      const today = new Date();
+      const options = { day: 'numeric', month: 'short', year: 'numeric' };
+      return today.toLocaleDateString('id-ID', options);
     }
 
-    pemasukan.forEach(item=>{
+    // Render list ke layar
+    function renderList(data) {
+      const listContainer = document.getElementById('borrowerList');
+      listContainer.innerHTML = '';
 
-        totalPemasukan += item.nominal;
+      data.forEach(item => {
+        const isPinjam = item.status === 'pinjam';
+        const statusBadge = isPinjam 
+          ? `<span class="status-badge status-pinjam">• Status Pinjam</span>`
+          : `<span class="status-badge status-dibayar"><i data-lucide="check" size="10"></i> Sudah Dibayar</span>`;
 
-        htmlPemasukan += `
+        // Menampilkan Tanggal Bayar jika sudah lunas
+        const paidDateHTML = item.paidDate 
+          ? `<div class="date date-paid"><i data-lucide="check-circle-2" size="10"></i> Lunas: ${item.paidDate}</div>` 
+          : '';
 
-        <div class="card list-card">
+        // Tombol 'Bayar' hanya tampil jika masih 'pinjam'
+        const payButton = isPinjam 
+          ? `<button class="btn-action btn-pay" onclick="payBorrower(${item.id})"><i data-lucide="check-circle" size="12"></i> Bayar</button>` 
+          : '';
 
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between">
-
-                    <div>
-
-                        <h6 class="mb-1">
-                            ${item.nama}
-                        </h6>
-
-                        <small class="text-muted d-block">
-                            ${item.tanggal}
-                        </small>
-
-                        <small class="text-success fw-semibold">
-                            ${item.keterangan}
-                        </small>
-
-                    </div>
-
-                    <span class="badge bg-success">
-                        Lunas
-                    </span>
-
+        const cardHTML = `
+          <div class="borrower-card">
+            <div class="borrower-info">
+              <div class="avatar ${item.avatarColor}">
+                <i data-lucide="user" size="20"></i>
+              </div>
+              <div class="details">
+                <h3>${item.name}</h3>
+                <div class="date-container">
+                  <div class="date">
+                    <i data-lucide="calendar" size="10"></i> Pinjam: ${item.date}
+                  </div>
+                  ${paidDateHTML}
                 </div>
-
-                <div class="rp text-success mt-3">
-                    ${formatRupiah(item.nominal)}
-                </div>
-
+              </div>
             </div>
-
-        </div>
-
+            
+            <div class="borrower-status-area">
+              ${statusBadge}
+              <div class="amount-info">
+                <label>Jumlah Pinjam</label>
+                <span>${item.amount}</span>
+              </div>
+              <div class="action-btns">
+                ${payButton}
+                <button class="btn-action btn-detail"><i data-lucide="eye" size="12"></i> Detail</button>
+                <button class="btn-action btn-delete" onclick="deleteBorrower(${item.id})"><i data-lucide="trash-2" size="12"></i> Hapus</button>
+              </div>
+            </div>
+          </div>
         `;
-    });
+        listContainer.insertAdjacentHTML('beforeend', cardHTML);
+      });
 
-    document.getElementById('riwayat').innerHTML = htmlPemasukan;
+      // Re-initialize Lucide Icons
+      lucide.createIcons();
+    }
 
-    document.getElementById('totalPiutang').innerHTML =
-    formatRupiah(totalPiutang);
+    // Filter Nama
+    function filterData() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = borrowers.filter(b => b.name.toLowerCase().includes(query));
+      renderList(filtered);
+    }
 
-    document.getElementById('totalPemasukan').innerHTML =
-    formatRupiah(totalPemasukan);
-}
+    // Tambah Peminjam (Dipanggil via Tombol Pinjam Bawah)
+    function addBorrower() {
+      const name = prompt("Masukkan nama peminjam:");
+      if (!name) return;
 
-tampilData();
+      let rawAmount = prompt("Masukkan jumlah pinjaman (contoh: 500000 atau Rp 500.000):");
+      if (!rawAmount) return;
 
-</script>
+      let amountFormatted = rawAmount.trim();
+      if (!amountFormatted.toLowerCase().includes('rp')) {
+        amountFormatted = "Rp " + Number(amountFormatted).toLocaleString('id-ID');
+      }
 
+      const newBorrower = {
+        id: Date.now(),
+        name: name,
+        date: getFormattedDate(),
+        paidDate: null,
+        status: "pinjam",
+        amount: amountFormatted,
+        avatarColor: "avatar-blue"
+      };
+
+      borrowers.unshift(newBorrower);
+      renderList(borrowers);
+      updateCounts();
+    }
+
+    // Fungsi Pembayaran Pinjaman (Set Tanggal Bayar Otomatis)
+    function payBorrower(id) {
+      const borrower = borrowers.find(b => b.id === id);
+      if (borrower) {
+        if (confirm(`Konfirmasi pelunasan pinjaman sebesar ${borrower.amount} untuk ${borrower.name}?`)) {
+          borrower.status = "dibayar";
+          borrower.paidDate = getFormattedDate(); // Mengisi tanggal bayar hari ini secara otomatis
+          borrower.avatarColor = "avatar-green";
+          renderList(borrowers);
+          updateCounts();
+        }
+      }
+    }
+
+    // Hapus peminjam
+    function deleteBorrower(id) {
+      if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+        borrowers = borrowers.filter(b => b.id !== id);
+        renderList(borrowers);
+        updateCounts();
+      }
+    }
+
+    // Hitung Ulang Statistik Ringkasan
+    function updateCounts() {
+      document.getElementById('totalCount').innerText = borrowers.length;
+      document.getElementById('activeCount').innerText = borrowers.filter(b => b.status === 'pinjam').length;
+      document.getElementById('paidCount').innerText = borrowers.filter(b => b.status === 'dibayar').length;
+    }
+
+    // Initial Load
+    renderList(borrowers);
+    updateCounts();
+  </script>
 </body>
 </html>
